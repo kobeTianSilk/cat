@@ -28,12 +28,3 @@ class RouteBuildError(RouteError):
 
 class ParamsError(CatException):
     """参数异常模块"""
-
-
-from applications.http import HTTPError
-
-
-class TemplateError(HTTPError):
-    """模板加载异常"""
-    def __init__(self, message):
-        HTTPError.__init__(self, 500, message)

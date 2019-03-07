@@ -11,7 +11,6 @@ from urlparse import urljoin
 from datetime import datetime, date as datedate
 from inspect import getargspec
 from urllib import unquote as urlunquote
-from applications.http import HTTPError, HTTPResponse
 from applications.wsgi import WSGIApplication
 from conf.utils import touni, tob, request, app, response
 
@@ -183,6 +182,7 @@ def auth_basic(check, realm="private", text="Access denied"):
         def wrapper(*a, **ka):
             user, password = request.auth or (None, None)
             if user is None or not check(user, password):
+                from applications.http import HTTPError
                 err = HTTPError(401, text)
                 err.add_header('WWW-Authenticate', 'Basic realm="%s"' % realm)
                 return err
@@ -216,6 +216,7 @@ url       = make_default_app_wrapper('get_url')
 
 def abort(code=500, text='Unknown Error.'):
     """ Aborts execution and causes a HTTP error. """
+    from applications.http import HTTPError
     raise HTTPError(code, text)
 
 
@@ -224,6 +225,7 @@ def redirect(url, code=None):
         the HTTP protocol version. """
     if not code:
         code = 303 if request.get('SERVER_PROTOCOL') == "HTTP/1.1" else 302
+    from applications.http import HTTPResponse
     res = response.copy(cls=HTTPResponse)
     res.status = code
     res.body = ""
@@ -264,7 +266,7 @@ def static_file(filename, root, mimetype='auto', download=False, charset='UTF-8'
     root = os.path.abspath(root) + os.sep
     filename = os.path.abspath(os.path.join(root, filename.strip('/\\')))
     headers = dict()
-
+    from applications.http import HTTPError
     if not filename.startswith(root):
         return HTTPError(403, "Access denied.")
     if not os.path.exists(filename) or not os.path.isfile(filename):
@@ -295,12 +297,13 @@ def static_file(filename, root, mimetype='auto', download=False, charset='UTF-8'
         ims = parse_date(ims.split(";")[0].strip())
     if ims is not None and ims >= int(stats.st_mtime):
         headers['Date'] = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
+        from applications.http import HTTPResponse
         return HTTPResponse(status=304, **headers)
 
     body = '' if request.method == 'HEAD' else open(filename, 'rb')
 
     headers["Accept-Ranges"] = "bytes"
-    ranges = request.environ.get('HTTP_RANGE')
+    from applications.http import HTTPError, HTTPResponse
     if 'HTTP_RANGE' in request.environ:
         ranges = list(parse_range_header(request.environ['HTTP_RANGE'], clen))
         if not ranges:
