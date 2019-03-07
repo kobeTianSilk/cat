@@ -113,7 +113,7 @@ def run(app=None, server='wsgiref', host='127.0.0.1', port=8080,
             app.install(plugin)
 
         if server in server_names:
-            server = server_names.get(server)
+            server = server_names.get(  )
         if isinstance(server, basestring):
             server = load(server)
         if isinstance(server, type):

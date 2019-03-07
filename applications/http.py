@@ -1,3 +1,4 @@
+# coding=utf-8
 import cgi
 import threading
 import time
@@ -6,7 +7,7 @@ from Cookie import SimpleCookie
 from io import BytesIO
 from tempfile import TemporaryFile
 
-from web import urlquote
+from urllib import quote as urlquote
 from urlparse import urljoin, SplitResult as UrlSplitResult
 
 from conf.exceptions import CatException
@@ -744,8 +745,15 @@ class HTTPResponse(Response, CatException):
 
 class HTTPError(HTTPResponse):
     default_status = 500
+
     def __init__(self, status=None, body=None, exception=None, traceback=None,
                  **options):
         self.exception = exception
         self.traceback = traceback
         super(HTTPError, self).__init__(body, status, **options)
+
+
+class TemplateError(HTTPError):
+    """模板加载异常"""
+    def __init__(self, message):
+        HTTPError.__init__(self, 500, message)

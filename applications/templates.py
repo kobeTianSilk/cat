@@ -4,8 +4,8 @@ import re
 import threading
 from UserDict import DictMixin
 
-from conf.exceptions import TemplateError
-from conf.utils import depr, TEMPLATE_PATH, DEBUG, TEMPLATES, abort, touni, html_escape, cached_property
+from conf.utils import depr, TEMPLATE_PATH, DEBUG, TEMPLATES, touni, html_escape, cached_property
+from conf.httpUtils import abort
 
 
 class BaseTemplate(object):
@@ -32,6 +32,7 @@ class BaseTemplate(object):
         self.encoding = encoding
         self.settings = self.settings.copy() # Copy from class variable
         self.settings.update(settings) # Apply
+        from applications.http import TemplateError
         if not self.source and self.name:
             self.filename = self.search(self.name, self.lookup)
             if not self.filename:
@@ -225,7 +226,7 @@ class SimpleTemplate(BaseTemplate):
         self.execute(stdout, env)
         return ''.join(stdout)
 
-
+from applications.http import TemplateError
 class StplSyntaxError(TemplateError):
     pass
 

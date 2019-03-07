@@ -1,8 +1,7 @@
 import imp
 import sys
 
-from conf.exceptions import CatException, HTTPError
-from applications.http import LocalResponse, HTTPResponse
+from conf.exceptions import CatException
 from applications.templates import view
 from conf.utils import _e, response
 
@@ -36,6 +35,7 @@ class JSONPlugin(object):
             return callback
 
         def wrapper(*a, **ka):
+            from applications.http import HTTPResponse, HTTPError
             try:
                 rv = callback(*a, **ka)
             except HTTPError:
