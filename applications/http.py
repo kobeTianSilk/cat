@@ -1,7 +1,22 @@
+import cgi
+import threading
+import time
+from datetime import datetime, timedelta, date as datedate
 from Cookie import SimpleCookie
+from io import BytesIO
+from tempfile import TemporaryFile
 
-from conf.httpUtils import cookie_decode, _parse_qsl
-from conf.utils import DictProperty, WSGIHeaderDict, FormsDict, FileUpload
+from web import urlquote
+from urlparse import urljoin, SplitResult as UrlSplitResult
+
+from conf.exceptions import CatException
+from conf.httpUtils import cookie_decode, _parse_qsl, path_shift, parse_auth, parse_date, http_date, cookie_encode
+from conf.utils import DictProperty, WSGIHeaderDict, FormsDict, FileUpload, tob, tonat, py31, py3k, HeaderDict, \
+    _HTTP_STATUS_LINES, touni, depr
+from conf.utils import json_lds
+
+
+json_loads = json_lds
 
 
 class BaseRequest(object):
@@ -242,6 +257,11 @@ class BaseRequest(object):
             if key in self.environ: safe_env[key] = self.environ[key]
         args = dict(fp=self.body, environ=safe_env, keep_blank_values=True)
         if py31:
+            from io import TextIOWrapper
+
+            class NCTextIOWrapper(TextIOWrapper):
+                def close(self): pass  # Keep wrapped buffer open.
+
             args['fp'] = NCTextIOWrapper(args['fp'], encoding='utf8',
                                          newline='\n')
         elif py3k:
@@ -710,7 +730,7 @@ Request = BaseRequest
 Response = BaseResponse
 
 
-class HTTPResponse(Response, BottleException):
+class HTTPResponse(Response, CatException):
     def __init__(self, body='', status=None, headers=None, **more_headers):
         super(HTTPResponse, self).__init__(body, status, headers, **more_headers)
 

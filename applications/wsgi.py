@@ -1,12 +1,17 @@
 import functools
-
-from bottles import ConfigDict
-from resource import ResourceManager
+import itertools
+import sys
+from traceback import format_exc
+from urlparse import urljoin
+from applications.control import load, run
+from applications.templates import template
 from applications.route import Route, Router
-from applications.response import LocalResponse
-from applications.templates import TemplatePlugin
-from conf.utils import JSONPlugin, DictProperty, cached_property, depr
-
+from applications.http import LocalResponse, HTTPResponse, HTTPError
+from applications.plugins import TemplatePlugin
+from conf.exceptions import RouteReset
+from conf.httpUtils import yieldroutes
+from conf.utils import JSONPlugin, DictProperty, cached_property, depr, ResourceManager, request, DEBUG, makelist, \
+    ERROR_PAGE_TEMPLATE, tob, py3k, _e, WSGIFileWrapper, _closeiter, html_escape, _raise, ConfigDict
 
 response = LocalResponse()
 
@@ -140,7 +145,7 @@ class WSGIApplication(object):
             :class:`Route` objects into this application. The routes keep their
             'owner', meaning that the :data:`Route.app` attribute is not
             changed. '''
-        if isinstance(routes, Bottle):
+        if isinstance(routes, WSGIApplication):
             routes = routes.routes
         for route in routes:
             self.add_route(route)
@@ -380,7 +385,7 @@ class WSGIApplication(object):
             new_iter = itertools.chain([first], iout)
         elif isinstance(first, unicode):
             encoder = lambda x: x.encode(response.charset)
-            new_iter = imap(encoder, itertools.chain([first], iout))
+            new_iter = itertools.imap(encoder, itertools.chain([first], iout))
         else:
             msg = 'Unsupported response type: %s' % type(first)
             return self._cast(HTTPError(500, msg))

@@ -5,7 +5,7 @@ from urllib import urlencode
 from conf.utils import _e, cached_property, depr, update_wrapper, py3k, DEBUG
 from conf.exceptions import RouteSyntaxError, RouteBuildError, RouteReset
 from conf.exceptions import HTTPError
-from conf.configDict import ConfigDict
+from conf.utils import ConfigDict
 from inspect import getargspec
 
 

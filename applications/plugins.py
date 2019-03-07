@@ -1,10 +1,10 @@
 import imp
 import sys
 
-from conf.exceptions import CatException, HTTPError, HTTPResponse
-from applications.response import LocalResponse
+from conf.exceptions import CatException, HTTPError
+from applications.http import LocalResponse, HTTPResponse
 from applications.templates import view
-from conf.utils import _e
+from conf.utils import _e, response
 
 try:
     from simplejson import dumps as json_dumps, loads as json_lds
@@ -18,8 +18,6 @@ except ImportError:
             def json_dumps(data):
                 raise ImportError("JSON support requires Python 2.6 or simplejson.")
             json_lds = json_dumps
-
-response = LocalResponse()
 
 
 class PluginError(CatException): pass
