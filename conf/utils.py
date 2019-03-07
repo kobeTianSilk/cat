@@ -1,3 +1,4 @@
+# coding=utf-8
 import functools
 import httplib
 import os
@@ -118,6 +119,10 @@ def update_wrapper(wrapper, wrapped, *a, **ka):
         functools.update_wrapper(wrapper, wrapped, *a, **ka)
     except AttributeError:
         pass
+
+
+def _raise(*a):
+    raise a[0](a[1]).with_traceback(a[2])
 
 
 class JSONPlugin(object):
@@ -416,13 +421,7 @@ class WSGIHeaderDict(DictMixin):
 
 
 class ConfigDict(dict):
-    ''' A dict-like configuration storage with additional support for
-        namespaces, validators, meta-data, on_change listeners and more.
-
-        This storage is optimized for fast read access. Retrieving a key
-        or using non-altering dict methods (e.g. `dict.get()`) has no overhead
-        compared to a native dict.
-    '''
+    """类似于dict的配置存储。此存储已针对快速读取访问进行了优化"""
     __slots__ = ('_meta', '_on_change')
 
     class Namespace(DictMixin):
@@ -444,7 +443,6 @@ class ConfigDict(dict):
             del self._config[self._prefix + '.' + key]
 
         def __iter__(self):
-            ns_prefix = self._prefix + '.'
             for key in self._config:
                 ns, dot, name = key.rpartition('.')
                 if ns == self._prefix and name:
@@ -869,25 +867,13 @@ class lazy_attribute(object):
         setattr(cls, self.__name__, value)
         return value
 
-
-
-#: A thread-safe instance of :class:`LocalRequest`. If accessed from within a
-#: request callback, this instance always refers to the *current* request
-#: (even on a multithreaded server).
 request = LocalRequest()
 
-#: A thread-safe instance of :class:`LocalResponse`. It is used to change the
-#: HTTP response for the *current* request.
 response = LocalResponse()
 
-#: A thread-safe namespace. Not used by Bottle.
 local = threading.local()
 
-# Initialize app stack (create first empty Bottle app)
-# BC: 0.6.4 and needed for run()
 app = default_app = AppStack()
 app.push()
 
-#: A virtual package that redirects import statements.
-#: Example: ``import bottle.ext.sqlite`` actually imports `bottle_sqlite`.
 ext = _ImportRedirect('bottle.ext' if __name__ == '__main__' else __name__+".ext", 'bottle_%s').module

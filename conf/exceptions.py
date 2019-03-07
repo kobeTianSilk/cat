@@ -1,5 +1,4 @@
 # coding=utf-8
-from applications.http import HTTPError
 
 
 class CatException(Exception):
@@ -29,6 +28,9 @@ class RouteBuildError(RouteError):
 
 class ParamsError(CatException):
     """参数异常模块"""
+
+
+from applications.http import HTTPError
 
 
 class TemplateError(HTTPError):
