@@ -72,6 +72,7 @@ def run(app=None, server='wsgiref', host='127.0.0.1', port=8080,
         :param quiet: Suppress output to stdout and stderr? (default: False)
         :param options: Options passed to the server adapter.
      """
+    global lockfile
     if NORUN: return
     if reloader and not os.environ.get('BOTTLE_CHILD'):
         try:
